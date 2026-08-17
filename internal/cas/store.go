@@ -138,25 +138,25 @@ func (s *Store) Has(hash string) (bool, error) {
 // physical block was removed by this call. Returns ErrNotFound for a valid
 // but absent hash.
 func (s *Store) Delete(hash string) (removed bool, err error) {
-	_, err = ValidateHash(hash)
+	h, err := ValidateHash(hash)
 	if err != nil {
 		return false, err
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	n, ok := s.refs[hash]
+	n, ok := s.refs[h]
 	if !ok {
 		return false, ErrNotFound
 	}
 	n--
 	if n <= 0 {
-		c := s.blocks[hash]
-		delete(s.blocks, hash)
-		delete(s.refs, hash)
+		c := s.blocks[h]
+		delete(s.blocks, h)
+		delete(s.refs, h)
 		s.size -= int64(len(c))
 		return true, nil
 	}
-	s.refs[hash] = n
+	s.refs[h] = n
 	return false, nil
 }
 
